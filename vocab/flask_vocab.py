@@ -5,6 +5,7 @@ from a scrambled string)
 """
 
 import flask
+from flask import request
 import logging
 
 # Our modules
@@ -70,6 +71,7 @@ def keep_going():
 
 @app.route("/success")
 def success():
+    app.logger.info("You found three words")
     return flask.render_template('success.html')
 
 
@@ -79,7 +81,7 @@ def success():
 #   a JSON request handler
 #######################
 
-@app.route("/_check", methods=["POST"])
+@app.route("/_check", methods=["GET"])
 def check():
     """
     User has submitted the form with a word ('attempt')
@@ -92,21 +94,28 @@ def check():
     app.logger.debug("Entering check")
 
     # The data we need, from form and from cookie
-    text = flask.request.form["attempt"]
+#    text = flask.request.form["attempt"]
+    text = request.args.get("text", type=str)
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])  # Default to empty list
 
     # Is it good?
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
-
+    
+    rslt = {"right_word": in_jumble and matched}
+#    return flask.jsonify(result=rslt)
+ 
     # Respond appropriately
     if matched and in_jumble and not (text in matches):
         # Cool, they found a new word
         matches.append(text)
         flask.session["matches"] = matches
+        app.logger.info(len(matches))
+#        return flask.jsonify(result=rslt)
     elif text in matches:
         flask.flash("You already found {}".format(text))
+        return flask.jsonify(result=rslt)
     elif not matched:
         flask.flash("{} isn't in the list of words".format(text))
     elif not in_jumble:
@@ -120,7 +129,8 @@ def check():
     if len(matches) >= flask.session["target_count"]:
        return flask.redirect(flask.url_for("success"))
     else:
-       return flask.redirect(flask.url_for("keep_going"))
+#       return flask.redirect(flask.url_for("keep_going"))
+       return flask.jsonify(result=rslt)
 
 
 ###############

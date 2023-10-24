@@ -1,3 +1,6 @@
+Author: Miles Anderson
+Email: mander20@uoregon.edu
+Description: operates an anagram game
 # UOCIS322 - Project 3 #
 
 You'll learn about JQuery and asynchronous requests in this project.

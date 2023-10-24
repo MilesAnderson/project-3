@@ -98,7 +98,34 @@
          {% endfor %}
          {% endif %}
          {% endwith %}
+         <script>
+             $("#entry").submit( function(event) {
+                 event.preventDefault();
+              });
+
+             $("#attempt").keyup(function(event) {
+                 var txt = $("#attempt").val();
+                 var keycode = event.which;
+                 var letter = String.fromCharCode(keycode);
+
+                 if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+                 
+                 $.getJSON( "/_check", { text: txt }, function(data) {
+                     rsval = data.result.right_word;
+                     console.log("rsval: " + rsval)
+                     console.log("txt: " + txt)
+                     if (rsval) {
+                         $("#attempt").val("");
+                         $("#results").html(txt); 
+                     } else {
+                         $(".message").html(txt+" is not one of the words");
+                     } 
+                 });   
+             });
+         </script>
       </div>
       <!-- container -->
    </body>
 </html>
+
+
