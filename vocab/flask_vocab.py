@@ -103,7 +103,7 @@ def check():
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
     
-    rslt = {"right_word": in_jumble and matched}
+#    rslt = {"right_word": in_jumble and matched}
 #    return flask.jsonify(result=rslt)
  
     # Respond appropriately
@@ -112,25 +112,33 @@ def check():
         matches.append(text)
         flask.session["matches"] = matches
         app.logger.info(len(matches))
-#        return flask.jsonify(result=rslt)
+        rslt = {"right_word": 1, "port": CONFIG.PORT}
+        return flask.jsonify(result=rslt)
     elif text in matches:
         flask.flash("You already found {}".format(text))
+        rslt = {"right_word": 2}
         return flask.jsonify(result=rslt)
     elif not matched:
         flask.flash("{} isn't in the list of words".format(text))
+        rslt = {"right_word": 3}
+        return flask.jsonify(result=rslt)
     elif not in_jumble:
-        flask.flash(
+        flask.flash( 
             '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        rslt = {"right_word": 4, "anagram": jumble}
+        return flask.jsonify(result=rslt)
     else:
         app.logger.debug("This case shouldn't happen!")
         assert False  # Raises AssertionError
 
     # Choose page:  Solved enough, or keep going?
-    if len(matches) >= flask.session["target_count"]:
-       return flask.redirect(flask.url_for("success"))
-    else:
+#    if len(matches) >= flask.session["target_count"]:
+#       return flask.redirect(flask.url_for("success"))
+#       rslt = {"port": CONFIG.PORT}
+#       return flask.jsonify(result=rslt)
+#    else:
 #       return flask.redirect(flask.url_for("keep_going"))
-       return flask.jsonify(result=rslt)
+#       return flask.jsonify(result=rslt)
 
 
 ###############

@@ -77,31 +77,39 @@
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
-                  <input type="submit" name="try" />
+                 <!-- <input type="submit" name="try" /> -->
                </form>
             </div>
          </div>
          <br />
-         {% if session.matches|length is not equalto 0  %}
-         <h2>You found </h2>
-         <p id="results">
-            {% for match in session.matches %}
-            {{ match }}
-            {% endfor %}
-         </p>
-         {% endif %}
-         {% with messages = get_flashed_messages() %}
-         {% if messages %}
+         <!-- {% if session.matches|length is not equalto 0  %} -->
+         <!-- <h2>You found </h2> -->
+         <!-- <p id="results"> -->
+            <!-- {% for match in session.matches %} -->
+            <!-- {{ match }} -->
+            <!-- {% endfor %} -->
+         <!-- </p> -->
+         <!-- {% endif %} -->
+         <!-- {% with messages = get_flashed_messages() %} -->
+         <!-- {% if messages %} -->
          <!-- Mismatch, already found, etc. "flashed" from Python -->
-         {% for message in messages %}
-         <p class="message">{{ message }}</p>
-         {% endfor %}
-         {% endif %}
-         {% endwith %}
+         <!-- {% for message in messages %} -->
+         <!-- <p class="message">{{ message }}</p> -->
+         <!-- {% endfor %} -->
+         <!-- {% endif %} -->
+         <!-- {% endwith %} -->
+         
+         <p id="found"> </p>
+         <p id="results"> </p>
+
+         <p class="message"> </p>
+
          <script>
              $("#entry").submit( function(event) {
                  event.preventDefault();
               });
+
+             wordsGot = 0;
 
              $("#attempt").keyup(function(event) {
                  var txt = $("#attempt").val();
@@ -109,17 +117,32 @@
                  var letter = String.fromCharCode(keycode);
 
                  if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
-                 
+
                  $.getJSON( "/_check", { text: txt }, function(data) {
                      rsval = data.result.right_word;
                      console.log("rsval: " + rsval)
                      console.log("txt: " + txt)
-                     if (rsval) {
+                     if (rsval==1) {
+                         wordsGot++;
+                         console.log("wordsGot: " + wordsGot)
                          $("#attempt").val("");
-                         $("#results").html(txt); 
-                     } else {
-                         $(".message").html(txt+" is not one of the words");
-                     } 
+                         $("#found").html("<h2>You found </h2>");                        
+                         $("#results").append(txt+" ");
+                         $(".message").html(""); 
+                     } else if (rsval==2) {
+                         $(".message").html("You already found "+txt);
+                     } else if (rsval==3) {
+                         $(".message").html(txt+" isn't in the list of words");
+                     } else if (rsval==4) {
+                         jumble = data.result.anagram;
+                         $(".message").html(txt+" can't be made from the letters "+jumble);
+                     }
+                     if (wordsGot>=3) {
+                         portNum = data.result.port;
+                         var route = "http://localhost:"+portNum;
+                         console.log("route: " + route+"/success")
+                         window.location.href = route+"/success";
+                     }
                  });   
              });
          </script>
